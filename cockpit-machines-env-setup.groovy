@@ -2,7 +2,7 @@ node('jslave-cockpit-machines') {
     stage('Clean workspace'){
         cleanWs()
     }
-    
+
     stage('Get ansible scripts') {
         checkout([
             $class: 'GitSCM',
@@ -28,6 +28,18 @@ node('jslave-cockpit-machines') {
     }
 
     stage('Setup the environment') {
+        def IMAGEURL = ""
+
+        if (env.ARCH == "x86_64") {
+            IMAGEURL=env.IMAGE_URL_X86
+        } else if (env.ARCH == "aarch64") {
+            IMAGEURL=env.IMAGE_URL_AARCH64
+        } else if (env.ARCH == "s390x") {
+            IMAGEURL=env.IMAGE_URL_S390X
+        } else {
+            throw new Exception("not support")
+        }
+
         def cmd = "source ${ANSIBLEENV} && " +\
                   "ansible-playbook -v -i inventory main.yml " +\
                   "-e machine1=${HOST} " +\
